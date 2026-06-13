@@ -1,6 +1,4 @@
-Aqui está uma versão do seu **README** totalmente repaginada. Utilizei uma formatação mais moderna, com emojis para categorização, tabelas para os requisitos, blocos de destaque e uma estrutura visualmente muito mais atraente e profissional.
 
----
 
 # 🛏️ Sistema de Concessão de Colchão Novo
 
