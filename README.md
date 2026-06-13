@@ -54,7 +54,7 @@ Certifique-se de ter o **JDK (Java Development Kit)** instalado em sua máquina.
 
 1. Abra o seu terminal e navegue até a pasta raiz do projeto (onde os arquivos `.java` estão localizados, geralmente dentro de `src`):
 ```bash
-cd caminho/para/o/seu/projeto/src
+cd javajavajava\Projeto poo
 
 ```
 
