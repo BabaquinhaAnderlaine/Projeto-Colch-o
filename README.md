@@ -68,7 +68,7 @@ javac *.java
 
 3. Execute a aplicação (substitua `NomeDaClassePrincipal` pelo nome da classe que contém o método `main`, ex: `Main` ou `TelaPrincipal`):
 ```bash
-java NomeDaClassePrincipal
+java Main
 
 ```
 
