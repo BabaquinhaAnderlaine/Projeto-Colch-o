@@ -1,16 +1,18 @@
-// Classe base (herança será usada em Candidato)
+
 public class Pessoa {
     protected String nome;
     protected String cpf;
     protected String telefone;
+    protected int idade;
 
-    public Pessoa(String nome, String cpf, String telefone) {
+    public Pessoa(String nome, String cpf, String telefone, int idade) {
         this.nome = nome;
         this.cpf = cpf;
         this.telefone = telefone;
+        this.idade = idade;
     }
 
-    // Getters e setters
+    // Getters e Setters
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
 
@@ -19,4 +21,7 @@ public class Pessoa {
 
     public String getTelefone() { return telefone; }
     public void setTelefone(String telefone) { this.telefone = telefone; }
+
+    public int getIdade() { return idade; }
+    public void setIdade(int idade) { this.idade = idade; }
 }

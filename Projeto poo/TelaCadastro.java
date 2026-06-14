@@ -1,34 +1,44 @@
+
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import model.Candidato;
+import service.VerificadorBeneficio;
+import exception.*;
+
 public class TelaCadastro extends JFrame {
-    private JTextField txtNome, txtCpf, txtTelefone, txtRenda;
+    private JTextField txtNome, txtCpf, txtTelefone, txtIdade, txtRenda;
     private JTextArea areaResultado;
 
     public TelaCadastro() {
         setTitle("Sistema - Ganhe um Colchão Novo");
-        setSize(500, 450);
+        setSize(550, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
         // Painel de formulário
-        JPanel panelForm = new JPanel(new GridLayout(5, 2, 10, 10));
+        JPanel panelForm = new JPanel(new GridLayout(6, 2, 10, 10));
         panelForm.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         panelForm.add(new JLabel("Nome completo:"));
         txtNome = new JTextField();
         panelForm.add(txtNome);
 
-        panelForm.add(new JLabel("CPF (apenas números):"));
+        panelForm.add(new JLabel("CPF (11 números):"));
         txtCpf = new JTextField();
         panelForm.add(txtCpf);
 
-        panelForm.add(new JLabel("Telefone (ex: 11999999999):"));
+        panelForm.add(new JLabel("Telefone (10 ou 11 dígitos):"));
         txtTelefone = new JTextField();
         panelForm.add(txtTelefone);
+
+        panelForm.add(new JLabel("Idade:"));
+        txtIdade = new JTextField();
+        panelForm.add(txtIdade);
 
         panelForm.add(new JLabel("Renda mensal (R$):"));
         txtRenda = new JTextField();
@@ -47,58 +57,57 @@ public class TelaCadastro extends JFrame {
         scroll.setBorder(BorderFactory.createTitledBorder("Resultado"));
         add(scroll, BorderLayout.CENTER);
 
-        // Ação do botão com validação e tratamento de erros
+        // Ação do botão – agora sem regras de negócio, apenas captura exceções
         btnVerificar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    // Validação de campos vazios
-                    if (txtNome.getText().trim().isEmpty() ||
-                        txtCpf.getText().trim().isEmpty() ||
-                        txtTelefone.getText().trim().isEmpty() ||
-                        txtRenda.getText().trim().isEmpty()) {
-                        throw new Exception("Todos os campos são obrigatórios.");
-                    }
-
+                    // Coleta os dados da tela
                     String nome = txtNome.getText().trim();
                     String cpf = txtCpf.getText().trim();
                     String telefone = txtTelefone.getText().trim();
-
-                    // Validação simples de CPF (apenas dígitos e 11 caracteres)
-                    if (!cpf.matches("\\d{11}")) {
-                        throw new Exception("CPF inválido. Digite exatamente 11 números.");
-                    }
-
-                    // Validação de telefone (apenas dígitos, mínimo 10)
-                    if (!telefone.matches("\\d{10,11}")) {
-                        throw new Exception("Telefone inválido. Digite 10 ou 11 dígitos (DDD + número).");
-                    }
-
+                    
+                    int idade;
                     double renda;
+                    
                     try {
+                        idade = Integer.parseInt(txtIdade.getText().trim());
                         renda = Double.parseDouble(txtRenda.getText().trim());
-                        if (renda < 0) throw new NumberFormatException();
                     } catch (NumberFormatException ex) {
-                        throw new Exception("Renda inválida. Digite um valor numérico positivo (ex: 1250.00).");
+                        throw new Exception("Idade e Renda devem ser números válidos.");
                     }
-
-                    // Cria o candidato usando herança
-                    Candidato candidato = new Candidato(nome, cpf, telefone, renda);
-
-                    // Verifica direito e exibe mensagem
-                    String mensagem = VerificadorBeneficio.mensagemResultado(candidato);
-                    areaResultado.setText(mensagem + "\n\n--- Dados cadastrados ---\n" +
-                            "Nome: " + candidato.getNome() + "\n" +
-                            "CPF: " + candidato.getCpf() + "\n" +
-                            "Telefone: " + candidato.getTelefone() + "\n" +
-                            "Renda: R$ " + String.format("%.2f", candidato.getRendaMensal()));
-
+                    
+                    // Cria o objeto Candidato (modelo)
+                    Candidato candidato = new Candidato(nome, cpf, telefone, idade, renda);
+                    
+                    // Delega toda a validação e regra de negócio para o service
+                    VerificadorBeneficio.validarCandidato(candidato);  // pode lançar exceções específicas
+                    boolean temDireito = VerificadorBeneficio.temDireito(candidato);
+                    
+                    // Exibe o resultado usando o método que já trata exceções internamente
+                    String resultado = VerificadorBeneficio.mensagemResultado(candidato);
+                    areaResultado.setText(resultado + "\n\n--- Dados cadastrados ---\n" + candidato);
+                    
+                } catch (DadosObrigatoriosException ex) {
+                    JOptionPane.showMessageDialog(TelaCadastro.this, 
+                            "Dados obrigatórios: " + ex.getMessage(), 
+                            "Erro de validação", JOptionPane.ERROR_MESSAGE);
+                    areaResultado.setText("");
+                } catch (IdadeInvalidaException ex) {
+                    JOptionPane.showMessageDialog(TelaCadastro.this, 
+                            "Idade inválida: " + ex.getMessage(), 
+                            "Erro de validação", JOptionPane.ERROR_MESSAGE);
+                    areaResultado.setText("");
+                } catch (RendaInvalidaException ex) {
+                    JOptionPane.showMessageDialog(TelaCadastro.this, 
+                            "Renda inválida: " + ex.getMessage(), 
+                            "Erro de validação", JOptionPane.ERROR_MESSAGE);
+                    areaResultado.setText("");
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(TelaCadastro.this,
-                            "Erro: " + ex.getMessage(),
-                            "Validação de dados",
-                            JOptionPane.ERROR_MESSAGE);
-                    areaResultado.setText(""); // limpa área em caso de erro
+                    JOptionPane.showMessageDialog(TelaCadastro.this, 
+                            "Erro inesperado: " + ex.getMessage(), 
+                            "Erro", JOptionPane.ERROR_MESSAGE);
+                    areaResultado.setText("");
                 }
             }
         });
